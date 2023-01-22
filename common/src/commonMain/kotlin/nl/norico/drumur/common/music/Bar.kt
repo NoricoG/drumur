@@ -5,9 +5,9 @@ import nl.norico.drumur.common.midi.MidiPlayer
 
 class Bar(val length: Int, val midi: MidiPlayer) {
     val NoSoundSymbol = '.'
-    val Duration = 100L
+    val Duration = 200L
 
-    var sounds = arrayOfNulls<Sound?>(length)
+    var sounds = Map<Sound, List<Boolean>>()
 
     companion object {
         val logger = LoggerFactory.getLogger(this::class.java)
@@ -23,6 +23,7 @@ class Bar(val length: Int, val midi: MidiPlayer) {
         var currentDuration = 0L
 
         for (sound in this.sounds) {
+
             // if there is a sound, keep track of it
             if (sound != null) {
                 if (currentSound != null) {

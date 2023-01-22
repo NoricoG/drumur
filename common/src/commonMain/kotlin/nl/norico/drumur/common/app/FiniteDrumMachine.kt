@@ -1,21 +1,35 @@
 package nl.norico.drumur.common.app
 
+import org.slf4j.LoggerFactory
+
 class FiniteDrumMachine {
     val userInput = State()
-    var currentState = userInput
+    val pauseState = State()
+
+    private val logger = LoggerFactory.getLogger(this::class.java)
 
     init {
         Action(userInput, "Play random sound", { d -> d.playRandomSound() }, userInput)
         Action(userInput, "Play all sounds", { d -> d.playAllSounds() }, userInput)
         Action(userInput, "Random instrument", { d -> d.randomInstrument() }, userInput)
+        for (i in 0 until 3) {
+            Action(userInput, "Random sound $i", { d -> d.randomSound(i) }, userInput)
+        }
         Action(userInput, "Play instrument", { d -> d.playInstrument() }, userInput)
         Action(userInput, "Random pattern", { d -> d.randomPattern() }, userInput)
-        Action(userInput, "Play pattern", { d -> d.playPattern(3) }, userInput)
+        Action(userInput, "Play pattern", { d -> d.playPattern(4) }, userInput)
         Action(userInput, "Multiple random patterns", { d -> d.randomPatterns() }, userInput)
+
+        Action(pauseState, "Unpauze", {d -> d.playRandomSound() }, userInput)
     }
 
-    fun execute(patternGenerator: PatternGenerator, action: Action) {
-        this.currentState = action.execute(patternGenerator)
+    fun getInitialState(): State {
+        return this.userInput
+    }
+
+    fun execute(patternGenerator: PatternGenerator, action: Action): State {
+        logger.info(action.name)
+        return action.execute(patternGenerator)
     }
 }
 

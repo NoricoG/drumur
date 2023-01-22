@@ -1,18 +1,20 @@
 package nl.norico.drumur.common.midi
 
-import javax.sound.midi.MidiSystem
-import javax.sound.midi.Receiver
-import javax.sound.midi.ShortMessage
-import javax.sound.midi.Synthesizer
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Paths
+import javax.sound.midi.*
 
 class DesktopMidiPlayer : MidiPlayer {
     var synth: Synthesizer
     var rcvr: Receiver
     var timeStamp: Long = 0
-    // var channel = 9 // percussion
-    var channel = 0
+     var channel = 9 // percussion
+//    var channel = 0
 
     init {
+        // TODO: not hardcoded
+        val soundfont: Soundbank = MidiSystem.getSoundbank(File("/Users/Norico.Groeneveld/soundfonts/Compifont_13082016.sf2").inputStream())
         val devInfo = MidiSystem.getMidiDeviceInfo()
 //    for (device in devInfo) {
 //        println(device)
@@ -29,15 +31,17 @@ class DesktopMidiPlayer : MidiPlayer {
         }
         timeStamp = this.synth.getMicrosecondPosition()
 
-        val soundbank = this.synth.getDefaultSoundbank()
-        println(soundbank.getDescription())
+//        val soundbank = this.synth.getDefaultSoundbank()
+//        println(soundbank.getDescription())
 
+        this.synth.loadAllInstruments(soundfont)
+        println(this.synth.isSoundbankSupported(soundfont))
         val instList = this.synth.getAvailableInstruments()
-        println("instruments:")
-        for (instrument in instList) {
-            println(instrument)
-        }
-        this.synth.loadInstrument(instList[0])
+//        println("instruments:")
+//        for (instrument in instList) {
+//            println(instrument)
+//        }
+        this.synth.loadInstrument(instList[3])
 
         this.rcvr = synth.getReceiver()
     }
