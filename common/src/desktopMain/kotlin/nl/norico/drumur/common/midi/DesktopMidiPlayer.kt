@@ -1,20 +1,26 @@
 package nl.norico.drumur.common.midi
 
+import org.slf4j.LoggerFactory
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.Paths
 import javax.sound.midi.*
 
-class DesktopMidiPlayer : MidiPlayer {
+
+class DesktopMidiPlayer() : MidiPlayer()  {
     var synth: Synthesizer
     var rcvr: Receiver
-    var timeStamp: Long = 0
-     var channel = 9 // percussion
-//    var channel = 0
 
     init {
-        // TODO: not hardcoded
-        val soundfont: Soundbank = MidiSystem.getSoundbank(File("/Users/Norico.Groeneveld/soundfonts/Compifont_13082016.sf2").inputStream())
+        var soundfontPath: String? = null
+        var soundfont: Soundbank? = null
+        val useSoundfont = false
+
+        if (useSoundfont) {
+            logger.info("Loading soundfont")
+            soundfontPath = "/Users/Norico.Groeneveld/soundfonts/Compifont_13082016.sf2"
+            soundfont = MidiSystem.getSoundbank(File(soundfontPath).inputStream())
+            logger.info("Loaded soundfont")
+        }
+
         val devInfo = MidiSystem.getMidiDeviceInfo()
 //    for (device in devInfo) {
 //        println(device)
@@ -29,13 +35,16 @@ class DesktopMidiPlayer : MidiPlayer {
         if (!(this.synth.isOpen)) {
             this.synth.open()
         }
-        timeStamp = this.synth.getMicrosecondPosition()
 
 //        val soundbank = this.synth.getDefaultSoundbank()
 //        println(soundbank.getDescription())
 
-        this.synth.loadAllInstruments(soundfont)
-        println(this.synth.isSoundbankSupported(soundfont))
+        if (useSoundfont) {
+            this.synth.loadAllInstruments(soundfont)
+            logger.info("Loaded soundfont completely")
+            println(this.synth.isSoundbankSupported(soundfont))
+        }
+
         val instList = this.synth.getAvailableInstruments()
 //        println("instruments:")
 //        for (instrument in instList) {
@@ -44,36 +53,38 @@ class DesktopMidiPlayer : MidiPlayer {
         this.synth.loadInstrument(instList[3])
 
         this.rcvr = synth.getReceiver()
+
+  }
+
+    fun setReverbChorus() {
+        // test of reverb and chorus
+//        this.rcvr.send(ShortMessage(ShortMessage.CONTROL_CHANGE, this.channel, 91, 127), this.timeStamp)
+//        this.rcvr.send(ShortMessage(ShortMessage.CONTROL_CHANGE, this.channel, 93, 127), this.timeStamp)
+//        val pp = 0x01.toByte()
+//        val vv = 0x7F.toByte()
+//        this.rcvr.send(SysexMessage(SysexMessage.SYSTEM_EXCLUSIVE, byteArrayOf(0x7F, 0x7F, 0x04, 0x05, 0x01, 0x01, 0x01, 0x01, 0x01, pp, vv), 11), this.timeStamp)
     }
 
-    override fun playNote(note: Int, velocity: Int, duration: Long, sleep: Boolean, imperfections: Boolean) {
-        var velocity = velocity
-        var duration = duration
-        if (imperfections) {
-            velocity += imperfection(VELOCITY_IMPERFECTIONS)
-            // TODO: make sure that duration imperfections don't add up
-            duration += imperfection(DURATION_IMPERFECTIONS)
-        }
+    // TODO: remove after using sequencer
+    override fun getCurrentTimestamp(): Long {
+        return this.synth.microsecondPosition
+    }
 
-        this.rcvr.send(ShortMessage(ShortMessage.NOTE_ON, this.channel, note, velocity), timeStamp)
+    override fun sendNoteOnOff(channel: Int, note: Int, velocity: Int, timestamp: Long, duration: Long, sleep: Boolean) {
+        this.rcvr.send(ShortMessage(ShortMessage.NOTE_ON, channel, note, velocity), timestamp)
         if (sleep) {
             Thread.sleep(duration)
         }
-        this.timeStamp += duration * 1000
-        this.rcvr.send(ShortMessage(ShortMessage.NOTE_OFF, this.channel, note, velocity), timeStamp)
+        this.rcvr.send(ShortMessage(ShortMessage.NOTE_OFF, channel, note, velocity), timestamp + duration)
     }
 
-    override fun wait(duration: Long, sleep: Boolean) {
-        this.timeStamp += duration * 1000
-        if (sleep) {
-            Thread.sleep(duration)
-        }
+    override fun panic() {
+//        this.rcvr.send(ShortMessage(ShortMessage.STOP, channel, 0, 0), timeStamp)
     }
 
     override fun quit() {
-        this.rcvr.send(ShortMessage(ShortMessage.STOP, this.channel, 0, 0), timeStamp)
+//        this.panic()
         this.rcvr.close()
         this.synth.close()
     }
-
 }
