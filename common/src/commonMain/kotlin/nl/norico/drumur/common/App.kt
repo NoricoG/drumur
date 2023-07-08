@@ -5,10 +5,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.Button
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,8 +50,10 @@ fun getInterface(song: Song, midiPlayer: MidiPlayer, interfaceState: InterfaceSt
         getSongGrid(song, interfaceState, refreshes)
 
         Button(onClick = {midiPlayer.playSong(song)}) { Text("Play")}
+        Button(onClick = {midiPlayer.stop()}) { Text("Stop")}
 
-        getPartEditor(interfaceState.editPart, refreshes)
+        getPartEditor(interfaceState.editPart, refreshes, song)
+        getSongOptions(song)
 
     }
 }
@@ -115,7 +115,7 @@ fun getNoteButtons(midiPlayer: MidiPlayer, track: Int, from: Int, to: Int) {
 }
 
 @Composable
-fun getPartEditor(part: Part?, refreshes: Int) {
+fun getPartEditor(part: Part?, refreshes: Int, song: Song) {
     if (part != null) {
         Column {
             Row {
@@ -131,8 +131,9 @@ fun getPartEditor(part: Part?, refreshes: Int) {
                     }
                 }
             }
-            Button(onClick = {}) { Text("Property 1") }
-            Button(onClick = {}) { Text("Property 2") }
+
+            Button(onClick = {}) { Text("Part property 1") }
+            Button(onClick = {}) { Text("Part property 2") }
         }
     } else {
         Text("Select a part to edit")
@@ -156,6 +157,23 @@ fun getPatternGrid(pattern: Pattern) {
             }
         }
     }
+}
+
+@Composable
+fun getSongOptions(song: Song) {
+    Text("Tempo")
+//    TextField(
+//        value = song.tempo.toString(),
+//        onValueChange = { value: String ->
+//            val tempo = value.toFloatOrNull()
+//            if (tempo != null && tempo > 0 && tempo < 1000) {
+//                song.tempo = tempo
+//            }
+//        }
+//    )
+    Button(onClick = { song.tempo *= 2 }) { Text("Double") }
+    Button(onClick = { song.tempo /= 2 }) { Text("Half") }
+
 }
 
 expect fun getMidiPlayer(): MidiPlayer

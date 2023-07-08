@@ -1,15 +1,21 @@
 package nl.norico.drumur.common.midi
 
+import nl.norico.drumur.common.music.Song
+
 class AndroidMidiPlayer() : MidiPlayer() {
     init {
        println("midi init")
     }
 
-    override fun getCurrentTimestamp(): Long {
+    override fun playSong(song: Song) {
         TODO("Not yet implemented")
     }
 
-    override fun sendNoteOnOff(channel: Int, note: Int, velocity: Int, timestamp: Long, duration: Long, sleep: Boolean) {
+    override fun playNoteNow(channel: Int, note: Int, velocity: Int, duration: Long, sleep: Boolean) {
+        TODO("Not yet implemented")
+    }
+
+    override fun stop() {
         TODO("Not yet implemented")
     }
 
